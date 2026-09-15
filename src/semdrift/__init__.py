@@ -21,6 +21,14 @@ from semdrift.model.exceptions import (
     ModelLoadError,
     ModelInferenceError,
 )
+from semdrift.detection.config import DetectionConfig
+from semdrift.detection.models import DriftResult
+from semdrift.detection.detector import DriftDetector
+from semdrift.detection.exceptions import (
+    DetectionError,
+    DetectionConfigError,
+    DetectionInputError,
+)
 
 __version__ = "0.1.0"
 
@@ -37,4 +45,10 @@ __all__ = [
     "ModelError",
     "ModelLoadError",
     "ModelInferenceError",
+    "DetectionConfig",
+    "DriftResult",
+    "DriftDetector",
+    "DetectionError",
+    "DetectionConfigError",
+    "DetectionInputError",
 ]

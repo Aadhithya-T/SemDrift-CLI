@@ -82,19 +82,21 @@ Responsible only for model loading, token preprocessing, and inference.
 
 ---
 
-### `semdrift.detection`
+### `semdrift.detection` (Implemented in Phase 4)
 
-Responsible for converting model predictions into SemDrift detection results.
+Responsible for converting raw model predictions into structured drift detection decisions.
 
-**Will eventually:**
-- Calculate drift scores from model output
-- Apply configurable thresholds
-- Classify drift (e.g., aligned / drifted)
-- Assign severity and/or confidence levels if supported by the model
+**Implemented components:**
+- `DriftDetector`: Core detection engine applying configured threshold policy to `ModelPrediction` records.
+- `DetectionConfig`: Immutable configuration (`drift_threshold`) with strict numeric and bounds validation.
+- `DriftResult`: Immutable result contract maintaining 1-to-1 input ordering, probability, status (`'drifted'`, `'aligned'`, or `'undocumented'`), and metadata.
+- `DetectionError`, `DetectionConfigError`, `DetectionInputError`: Structured exception hierarchy.
+- Undocumented policy: Functions with `docstring is None` are preserved as `status="undocumented"` and `is_drift=False` without threshold evaluation.
 
 **Must NOT:**
-- Traverse repositories
-- Print output
+- Traverse repositories or parse source code
+- Load PyTorch models or perform inference
+- Format terminal output or export reports
 - Contain CLI-specific logic
 
 ---

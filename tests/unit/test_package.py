@@ -49,4 +49,10 @@ def test_public_api_exports():
     assert hasattr(semdrift, "ModelError")
     assert hasattr(semdrift, "ModelLoadError")
     assert hasattr(semdrift, "ModelInferenceError")
+    assert hasattr(semdrift, "DetectionConfig")
+    assert hasattr(semdrift, "DriftResult")
+    assert hasattr(semdrift, "DriftDetector")
+    assert hasattr(semdrift, "DetectionError")
+    assert hasattr(semdrift, "DetectionConfigError")
+    assert hasattr(semdrift, "DetectionInputError")
 
