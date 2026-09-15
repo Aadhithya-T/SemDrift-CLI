@@ -26,9 +26,11 @@ classifiers = [
     "Topic :: Software Development :: Documentation",
 ]
 
-# No runtime dependencies in Phase 1.
-# ML dependencies (torch, transformers) will be added when inference is implemented.
-dependencies = []
+# Runtime dependencies for Model & Inference (Phase 3)
+dependencies = [
+    "torch>=2.0.0",
+    "transformers>=4.30.0",
+]
 
 [project.optional-dependencies]
 dev = [

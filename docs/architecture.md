@@ -30,57 +30,55 @@ CLI             — user-facing command-line interface
 
 ## Module Responsibilities
 
-### `semdrift.parser`
+### `semdrift.parser` (Implemented in Phase 2)
 
-Responsible for understanding Python source code.
+Responsible for understanding Python source code via Python's standard-library `ast` module.
 
-**Will eventually:**
-- Parse Python source using AST
-- Identify functions and methods
-- Extract docstrings
-- Preserve source location information (file, line number)
-- Produce normalized code/documentation pairs
+**Implemented components:**
+- `PythonASTParser`: Walks AST, identifies top-level functions, class methods, async functions/methods, and nested functions.
+- `CodeDocumentPair`: Immutable data contract representing extracted functions, source code (including decorators and relative indentation), docstrings, deterministic qualified names, and 1-indexed line locations.
+- `ParseError`: Structured exception tracking file path, line number, message, and underlying cause for syntax/read errors.
 
 **Must NOT:**
-- Load ML models
-- Perform inference
+- Load ML models or perform inference
 - Generate reports
 - Implement CLI behavior
 
 ---
 
-### `semdrift.scanner`
+### `semdrift.scanner` (Implemented in Phase 2)
 
-Responsible for traversing a user's repository and determining which source files and functions should be analyzed.
+Responsible for discovering Python source files across directories or single file targets.
 
-**Will eventually:**
-- Walk directories recursively
-- Identify Python files
-- Respect exclusion patterns (e.g., `venv/`, `__pycache__/`, test files)
-- Pass discovered source files to the parser
+**Implemented components:**
+- `RepositoryScanner`: Recursively discovers `*.py` files, prunes excluded directories (`.git`, `.venv`, `venv`, `env`, `__pycache__`, `.pytest_cache`, `node_modules`), supports single-file inputs, enforces a configurable file size guard (`max_file_size_bytes`), and deterministically sorts discovered paths.
+- `ScanError`: Exception tracking target path and access/traversal failures.
 
 **Must NOT:**
 - Perform ML inference
+- Parse AST or inspect function internals
 - Calculate drift scores
 - Format CLI output
 
 ---
 
-### `semdrift.model`
+### `semdrift.model` (Implemented in Phase 3)
 
-Responsible only for model loading and inference.
+Responsible only for model loading, token preprocessing, and inference.
 
-**Will eventually:**
-- Load the selected trained SemDrift model (e.g., CodeBERT Joint Encoder)
-- Preprocess model inputs (tokenization, truncation)
-- Perform inference (forward pass)
-- Return raw model predictions (logits or probabilities)
+**Implemented components:**
+- `SemDriftModel`: High-level inference class with `from_checkpoint()` and `predict()`, supporting batching and ordering preservation.
+- `JointEncoderModel`: PyTorch `nn.Module` implementing joint code-doc self-attention with CodeBERT backbone and `[CLS]` token classification.
+- `ModelConfig`: Immutable configuration settings matching the trained research model.
+- `ModelPrediction`: Immutable prediction contract carrying drift probabilities, predicted class, and undocumented indicators.
+- `ModelError`, `ModelLoadError`, `ModelInferenceError`: Structured exception hierarchy.
+- Preprocessing: `extract_docstring_summary` and `prepare_joint_tokens` with `head_tail` code budget allocation.
 
 **Must NOT:**
-- Scan repositories
-- Traverse directories
-- Print terminal output
-- Decide how results are presented
+- Scan repositories or parse ASTs
+- Decide drift thresholds or severity levels
+- Print terminal output or format reports
+- Include training, optimization, or evaluation routines
 
 ---
 

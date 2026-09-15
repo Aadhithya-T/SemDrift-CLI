@@ -1,6 +1,10 @@
-# semdrift.scanner — Repository traversal and file discovery.
-#
-# This module will eventually:
-# - Walk directories to find Python source files
-# - Respect exclusion patterns (e.g., venv, __pycache__)
-# - Pass discovered source files to the parser
+"""
+semdrift.scanner — Repository traversal and Python source file discovery.
+"""
+
+from semdrift.scanner.repository import RepositoryScanner, ScanError
+
+__all__ = [
+    "RepositoryScanner",
+    "ScanError",
+]

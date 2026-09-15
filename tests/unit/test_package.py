@@ -32,3 +32,21 @@ def test_submodules_importable():
     for module_name in submodules:
         mod = importlib.import_module(module_name)
         assert mod is not None, f"Failed to import {module_name}"
+
+
+def test_public_api_exports():
+    """Verify that semdrift re-exports core public classes."""
+    import semdrift
+
+    assert hasattr(semdrift, "CodeDocumentPair")
+    assert hasattr(semdrift, "PythonASTParser")
+    assert hasattr(semdrift, "ParseError")
+    assert hasattr(semdrift, "RepositoryScanner")
+    assert hasattr(semdrift, "ScanError")
+    assert hasattr(semdrift, "ModelConfig")
+    assert hasattr(semdrift, "ModelPrediction")
+    assert hasattr(semdrift, "SemDriftModel")
+    assert hasattr(semdrift, "ModelError")
+    assert hasattr(semdrift, "ModelLoadError")
+    assert hasattr(semdrift, "ModelInferenceError")
+

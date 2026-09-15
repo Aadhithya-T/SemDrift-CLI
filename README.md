@@ -21,11 +21,11 @@ This implementation repository is **derived from and informed by** the research 
 
 ## Current Status
 
-> **Phase 1 — Foundation** (current)
+> **Phase 3 — Model / Inference Layer** (current)
 >
-> The repository has a clean package structure, module boundaries are defined,
-> and the project can be installed as a local Python package.
-> No scanning, parsing, model inference, or CLI commands are implemented yet.
+> The repository provides repository scanning (`semdrift.scanner`), Python AST extraction (`semdrift.parser`),
+> and CodeBERT Joint-Encoder model inference (`semdrift.model`) producing `ModelPrediction` records.
+> Detection thresholding, report formatting, and CLI commands are planned for later phases.
 
 ## Architecture
 
