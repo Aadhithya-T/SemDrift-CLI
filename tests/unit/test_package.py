@@ -55,4 +55,10 @@ def test_public_api_exports():
     assert hasattr(semdrift, "DetectionError")
     assert hasattr(semdrift, "DetectionConfigError")
     assert hasattr(semdrift, "DetectionInputError")
+    assert hasattr(semdrift, "JsonReporter")
+    assert hasattr(semdrift, "MarkdownReporter")
+    assert hasattr(semdrift, "TerminalReporter")
+    assert hasattr(semdrift, "ReportingError")
+    assert hasattr(semdrift, "ReportingInputError")
+
 

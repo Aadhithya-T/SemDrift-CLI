@@ -101,19 +101,25 @@ Responsible for converting raw model predictions into structured drift detection
 
 ---
 
-### `semdrift.reporting`
+### `semdrift.reporting` (Implemented in Phase 5)
 
-Responsible for converting detection results into user-facing formats.
+Responsible for converting structured detection results (`DriftResult`) into user-facing and machine-readable formats.
 
-**Will eventually support:**
-- Terminal output (rich formatted tables, panels)
-- JSON export
-- Markdown export
+**Implemented components:**
+- `JsonReporter`: Deterministic JSON array serialization preserving semantic field order and null probabilities.
+- `MarkdownReporter`: Structured GitHub Flavored Markdown generation with summary table, results table, and pipe escaping.
+- `TerminalReporter`: Clean, standard-library plain text summary and results listing.
+- `ReportingError`, `ReportingInputError`: Structured exception hierarchy for validation and formatting errors.
+- Guarantees: Input order preservation, zero recalculation of detection decisions, immutable input treatment, and handling of empty inputs (`[]`).
 
 **Must NOT:**
-- Perform model inference
-- Parse source code
-- Scan repositories
+- Make or recompute detection decisions
+- Apply drift thresholds or invent severity/confidence ratings
+- Perform model inference or parse source code
+- Scan repositories or perform file I/O
+- Write directly to stdout or terminal streams via `print()`
+- Contain CLI-specific argument handling or exit code logic
+
 
 ---
 

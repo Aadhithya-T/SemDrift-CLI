@@ -121,6 +121,89 @@ class TestDriftResult:
         with pytest.raises(FrozenInstanceError):
             res.status = "drifted"  # type: ignore
 
+    def test_invalid_status_raises_value_error(self):
+        with pytest.raises(ValueError, match="status must be one of"):
+            DriftResult(
+                file_path="a.py",
+                qualified_name="f",
+                line_number=1,
+                status="unknown",  # type: ignore
+                is_drift=False,
+                drift_probability=0.1,
+                threshold=0.5,
+            )
+
+    def test_non_boolean_is_drift_raises_type_error(self):
+        with pytest.raises(TypeError, match="is_drift must be bool"):
+            DriftResult(
+                file_path="a.py",
+                qualified_name="f",
+                line_number=1,
+                status="drifted",
+                is_drift="true",  # type: ignore
+                drift_probability=0.8,
+                threshold=0.5,
+            )
+
+    def test_undocumented_with_probability_raises_value_error(self):
+        with pytest.raises(ValueError, match="drift_probability must be None when status is 'undocumented'"):
+            DriftResult(
+                file_path="a.py",
+                qualified_name="f",
+                line_number=1,
+                status="undocumented",
+                is_drift=False,
+                drift_probability=0.5,
+                threshold=0.5,
+            )
+
+    def test_documented_with_none_probability_raises_value_error(self):
+        with pytest.raises(ValueError, match="drift_probability must not be None"):
+            DriftResult(
+                file_path="a.py",
+                qualified_name="f",
+                line_number=1,
+                status="drifted",
+                is_drift=True,
+                drift_probability=None,
+                threshold=0.5,
+            )
+
+    def test_documented_with_boolean_probability_raises_type_error(self):
+        with pytest.raises(TypeError, match="must be numeric float or int"):
+            DriftResult(
+                file_path="a.py",
+                qualified_name="f",
+                line_number=1,
+                status="drifted",
+                is_drift=True,
+                drift_probability=True,  # type: ignore
+                threshold=0.5,
+            )
+
+    def test_documented_with_out_of_bounds_probability_raises_value_error(self):
+        with pytest.raises(ValueError, match="within \\[0.0, 1.0\\]"):
+            DriftResult(
+                file_path="a.py",
+                qualified_name="f",
+                line_number=1,
+                status="drifted",
+                is_drift=True,
+                drift_probability=1.05,
+                threshold=0.5,
+            )
+        with pytest.raises(ValueError, match="within \\[0.0, 1.0\\]"):
+            DriftResult(
+                file_path="a.py",
+                qualified_name="f",
+                line_number=1,
+                status="aligned",
+                is_drift=False,
+                drift_probability=-0.01,
+                threshold=0.5,
+            )
+
+
 
 class TestDriftDetectorLogic:
     """Verify threshold evaluation, boundaries, ordering, and error handling."""

@@ -29,6 +29,13 @@ from semdrift.detection.exceptions import (
     DetectionConfigError,
     DetectionInputError,
 )
+from semdrift.reporting.json import JsonReporter
+from semdrift.reporting.markdown import MarkdownReporter
+from semdrift.reporting.terminal import TerminalReporter
+from semdrift.reporting.exceptions import (
+    ReportingError,
+    ReportingInputError,
+)
 
 __version__ = "0.1.0"
 
@@ -51,4 +58,10 @@ __all__ = [
     "DetectionError",
     "DetectionConfigError",
     "DetectionInputError",
+    "JsonReporter",
+    "MarkdownReporter",
+    "TerminalReporter",
+    "ReportingError",
+    "ReportingInputError",
 ]
+

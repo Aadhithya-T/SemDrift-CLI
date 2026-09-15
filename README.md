@@ -21,11 +21,13 @@ This implementation repository is **derived from and informed by** the research 
 
 ## Current Status
 
-> **Phase 4 — Detection Layer** (current)
+> **Phase 5 — Reporting Layer** (current)
 >
 > The repository provides repository scanning (`semdrift.scanner`), Python AST extraction (`semdrift.parser`),
-> CodeBERT Joint-Encoder model inference (`semdrift.model`), and threshold-based drift detection (`semdrift.detection`).
-> Report formatting (Phase 5) and CLI commands (Phase 6) are planned for subsequent phases.
+> CodeBERT Joint-Encoder model inference (`semdrift.model`), threshold-based drift detection (`semdrift.detection`),
+> and presentation/serialization reporting (`semdrift.reporting`) in JSON, Markdown, and Terminal formats.
+> CLI commands and entry points (Phase 6) are planned for the final phase.
+
 
 ## Architecture
 
