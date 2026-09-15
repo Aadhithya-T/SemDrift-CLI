@@ -1,0 +1,64 @@
+# ── Python ────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+*.whl
+.eggs/
+dist/
+build/
+
+# ── Virtual Environments ─────────────────────────────
+venv/
+.venv/
+env/
+.env/
+ENV/
+
+# ── IDE / Editor ─────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# ── pytest ───────────────────────────────────────────
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# ── mypy ─────────────────────────────────────────────
+.mypy_cache/
+
+# ── Model Artifacts ──────────────────────────────────
+# Do not commit trained model binaries
+*.pt
+*.pth
+*.bin
+*.onnx
+*.safetensors
+models/checkpoints/
+
+# ── Generated Reports ────────────────────────────────
+reports/
+*.report.json
+*.report.md
+
+# ── Data / Datasets ──────────────────────────────────
+# Datasets belong in the research repository
+data/
+
+# ── Local Experiment Outputs ─────────────────────────
+experiments/
+outputs/
+logs/
+
+# ── OS Files ─────────────────────────────────────────
+.DS_Store
+Thumbs.db
