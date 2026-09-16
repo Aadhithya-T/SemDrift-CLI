@@ -37,7 +37,11 @@ dev = [
     "pytest>=7.0",
 ]
 
+[project.scripts]
+semdrift = "semdrift.cli.main:main"
+
 [project.urls]
+
 Homepage = "https://github.com/Aadhithya-T/SemDrift"
 Repository = "https://github.com/Aadhithya-T/SemDrift"
 

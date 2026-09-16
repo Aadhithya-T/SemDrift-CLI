@@ -60,5 +60,12 @@ def test_public_api_exports():
     assert hasattr(semdrift, "TerminalReporter")
     assert hasattr(semdrift, "ReportingError")
     assert hasattr(semdrift, "ReportingInputError")
+    assert hasattr(semdrift, "main")
+    assert hasattr(semdrift, "CLIConfig")
+    assert hasattr(semdrift, "CLIError")
+    assert hasattr(semdrift, "CLIArgumentError")
+    assert hasattr(semdrift, "CLIRuntimeError")
+
+
 
 

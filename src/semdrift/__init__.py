@@ -36,6 +36,13 @@ from semdrift.reporting.exceptions import (
     ReportingError,
     ReportingInputError,
 )
+from semdrift.cli.main import main
+from semdrift.cli.config import CLIConfig
+from semdrift.cli.errors import (
+    CLIError,
+    CLIArgumentError,
+    CLIRuntimeError,
+)
 
 __version__ = "0.1.0"
 
@@ -63,5 +70,11 @@ __all__ = [
     "TerminalReporter",
     "ReportingError",
     "ReportingInputError",
+    "main",
+    "CLIConfig",
+    "CLIError",
+    "CLIArgumentError",
+    "CLIRuntimeError",
 ]
+
 

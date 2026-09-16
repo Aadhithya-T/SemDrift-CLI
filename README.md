@@ -21,20 +21,19 @@ This implementation repository is **derived from and informed by** the research 
 
 ## Current Status
 
-> **Phase 5 — Reporting Layer** (current)
+> **Phase 6 — Complete End-to-End Runtime Pipeline**
 >
-> The repository provides repository scanning (`semdrift.scanner`), Python AST extraction (`semdrift.parser`),
+> SemDrift provides a complete end-to-end command-line workflow:
+> repository scanning (`semdrift.scanner`), Python AST extraction (`semdrift.parser`),
 > CodeBERT Joint-Encoder model inference (`semdrift.model`), threshold-based drift detection (`semdrift.detection`),
-> and presentation/serialization reporting (`semdrift.reporting`) in JSON, Markdown, and Terminal formats.
-> CLI commands and entry points (Phase 6) are planned for the final phase.
-
+> multi-format reporting (`semdrift.reporting`), and command-line execution (`semdrift.cli`).
 
 ## Architecture
 
 The implementation follows a modular pipeline architecture:
 
 ```
-Repository → Scanner → Parser → Code/Doc pairs → Model → Detection → Reporting
+CLI → Scanner → Parser → Code/Doc pairs → Model → Detection → Reporting → stdout
 ```
 
 Each stage is a separate module with clearly defined responsibilities. See [docs/architecture.md](docs/architecture.md) for details.
@@ -49,6 +48,34 @@ cd SemDrift-CLI
 # Install in development mode
 pip install -e ".[dev]"
 ```
+
+## Usage
+
+Run a scan using the `semdrift` command or through module execution:
+
+```bash
+# Terminal output (default)
+semdrift scan ./my-project --checkpoint ./model/joint_encoder_checkpoint.pt
+
+# Markdown output
+semdrift scan ./my-project --checkpoint ./model/joint_encoder_checkpoint.pt --format markdown
+
+# Machine-readable JSON output
+semdrift scan ./my-project --checkpoint ./model/joint_encoder_checkpoint.pt --format json
+
+# Python module execution
+python -m semdrift scan ./my-project --checkpoint ./model/joint_encoder_checkpoint.pt
+```
+
+### CLI Options
+
+- `path`: Positional directory or `.py` file to scan.
+- `--checkpoint PATH`: **(Required)** Path to trained PyTorch model checkpoint (`.pt`).
+- `--format {terminal,markdown,json}`: Output report format (default: `terminal`).
+- `--threshold FLOAT`: Decision threshold in `[0.0, 1.0]` (default: `0.50`).
+- `--batch-size INT`: Inference batch size (default: `16`).
+- `--device {auto,cpu,cuda}`: Execution device (default: `auto`).
+
 
 ## Development
 

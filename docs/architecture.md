@@ -123,20 +123,23 @@ Responsible for converting structured detection results (`DriftResult`) into use
 
 ---
 
-### `semdrift.cli`
+### `semdrift.cli` (Implemented in Phase 6)
 
-Responsible only for the command-line interface.
+Responsible for user-facing command-line execution and end-to-end orchestration.
 
-**Will eventually expose commands such as:**
-```
-semdrift scan .
-semdrift scan ./src --threshold 0.6 --output json
-```
-
-**Design rule:** The CLI orchestrates the other modules. It does not directly implement AST parsing, model inference, or drift scoring.
+**Implemented components:**
+- `main(argv)`: Console entry point (`semdrift` / `python -m semdrift`) with deterministic exit code semantics (`0`, `1`, `2`).
+- `orchestrate_scan`: Pure coordination function sequencing Scanner → Parser → Model → Detection → Reporting without duplicating domain logic.
+- `CLIConfig`: Immutable runtime configuration dataclass.
+- `build_parser` & `parse_args`: Standard-library `argparse` hierarchy with strict option validation (`batch_size > 0`, `0.0 <= threshold <= 1.0`, required `--checkpoint`).
+- `resolve_device`: Target execution device resolution (`auto`, `cpu`, `cuda`).
+- Stream isolation: Guaranteed pure report text on `stdout` and diagnostic warnings/errors on `stderr`.
 
 **Must NOT:**
-- Contain parsing logic
-- Contain model inference logic
-- Contain drift scoring logic
-- Contain report formatting logic beyond dispatching to the reporting module
+- Parse ASTs or extract docstrings directly
+- Run model tensors or embeddings directly
+- Calculate drift scores or apply detection thresholds
+- Construct markdown, terminal, or JSON formatting manually
+- Mutate, sort, or re-order upstream results
+- Persist reports to disk
+
