@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "semdrift"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Detect semantic drift between source code and documentation in Python repositories."
 readme = "README.md"
 license = {text = "MIT"}
@@ -14,7 +14,7 @@ authors = [
 ]
 keywords = ["semantic-drift", "documentation", "code-quality", "static-analysis"]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
@@ -41,12 +41,22 @@ dev = [
 semdrift = "semdrift.cli.main:main"
 
 [project.urls]
-
 Homepage = "https://github.com/Aadhithya-T/SemDrift"
 Repository = "https://github.com/Aadhithya-T/SemDrift"
 
+[tool.hatch.version]
+path = "src/semdrift/__init__.py"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/semdrift"]
+
+[tool.hatch.build.targets.sdist]
+only-include = [
+    "src/semdrift",
+    "README.md",
+    "LICENSE",
+    "pyproject.toml",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

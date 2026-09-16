@@ -11,12 +11,20 @@ def test_import_semdrift():
 
 
 def test_version_exists():
-    """Verify that semdrift exposes a __version__ string."""
+    """Verify that semdrift exposes the release version 1.0.0."""
     import semdrift
 
     assert hasattr(semdrift, "__version__")
     assert isinstance(semdrift.__version__, str)
-    assert len(semdrift.__version__) > 0
+    assert semdrift.__version__ == "1.0.0"
+
+
+def test_version_metadata_consistency():
+    """Verify package distribution metadata version matches semdrift.__version__."""
+    from importlib.metadata import version
+    import semdrift
+
+    assert semdrift.__version__ == version("semdrift")
 
 
 def test_submodules_importable():

@@ -48,20 +48,36 @@ See [docs/architecture.md](docs/architecture.md) for full architectural specific
 
 ## Installation
 
+### User Installation (PyPI)
+
+```bash
+pip install semdrift
+```
+
+### Pre-release Installation (TestPyPI)
+
+```bash
+pip install --index-url https://test.pypi.org/simple/ \
+    --extra-index-url https://pypi.org/simple/ \
+    semdrift
+```
+
+### Development Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/Aadhithya-T/SemDrift-CLI.git
 cd SemDrift-CLI
 
-# Install package in development mode
+# Install package in editable development mode
 pip install -e ".[dev]"
 ```
 
 ## Model Checkpoint Requirement
 
-SemDrift-CLI is an inference and developer tool that intentionally does **not** bundle large model checkpoint weights into the package repository. 
+SemDrift-CLI is an inference and developer tool that intentionally does **not** bundle large model checkpoint weights into the package distribution. Users must provide a compatible trained checkpoint separately; model weights are not automatically downloaded.
 
-To run a scan, you must supply a trained CodeBERT Joint-Encoder checkpoint (`.pt` file) via the `--checkpoint` option:
+To run a scan, you must supply a trained CodeBERT Joint-Encoder checkpoint (`.pt` file) separately via the `--checkpoint` option:
 
 ```bash
 semdrift scan ./src --checkpoint /path/to/joint_encoder_checkpoint.pt

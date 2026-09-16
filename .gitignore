@@ -62,3 +62,7 @@ logs/
 # ── OS Files ─────────────────────────────────────────
 .DS_Store
 Thumbs.db
+
+# ── Agent / Task Artifacts ───────────────────────────
+task.md
+walkthrough.md
