@@ -238,3 +238,12 @@ class TestPythonASTParser:
 
         assert len(pairs) == 1
         assert pairs[0].file_path == "nested_dir/submodule.py"
+
+    def test_relative_path_normalization_single_file(self, parser):
+        file_path = FIXTURES_DIR / "nested_dir" / "submodule.py"
+        # When relative_to is the file path itself, it should normalize to the file name, not '.'
+        pairs = parser.parse_file(file_path, relative_to=file_path)
+
+        assert len(pairs) == 1
+        assert pairs[0].file_path == "submodule.py"
+

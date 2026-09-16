@@ -87,11 +87,13 @@ class PythonASTParser:
         # Normalize display path
         if relative_to is not None:
             try:
-                display_path = path.resolve().relative_to(Path(relative_to).resolve()).as_posix()
+                rel = path.resolve().relative_to(Path(relative_to).resolve()).as_posix()
+                display_path = path.name if rel == "." else rel
             except ValueError:
                 display_path = path.as_posix()
         else:
             display_path = path.as_posix()
+
 
         # Check file size limit
         try:
