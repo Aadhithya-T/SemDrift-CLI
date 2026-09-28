@@ -343,3 +343,77 @@ class TestEndToEndPipeline:
         assert stdout.getvalue() == ""
         assert "Error:" in stderr.getvalue()
         assert "Checkpoint file not found" in stderr.getvalue()
+
+    def test_scan_without_checkpoint_uses_cached_model(self, fixture_repo, tmp_path, mock_model, monkeypatch):
+        # Configure cache dir with existing model file
+        cache_dir = tmp_path / "model_cache"
+        cache_dir.mkdir()
+        cached_checkpoint = cache_dir / "joint_encoder_checkpoint.pt"
+        cached_checkpoint.write_text("cached weights", encoding="utf-8")
+        monkeypatch.setenv("SEM_DRIFT_CACHE_DIR", str(cache_dir))
+
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        exit_code = main(
+            ["scan", str(fixture_repo)],
+            stdout=stdout,
+            stderr=stderr,
+        )
+
+        assert exit_code == 0
+        assert stderr.getvalue() == ""
+        out = stdout.getvalue()
+        assert "SemDrift Detection Summary" in out
+        assert mock_model[-1].checkpoint_path == cached_checkpoint
+
+    def test_scan_without_checkpoint_downloads_if_not_cached(self, fixture_repo, tmp_path, mock_model, monkeypatch):
+        cache_dir = tmp_path / "empty_cache"
+        monkeypatch.setenv("SEM_DRIFT_CACHE_DIR", str(cache_dir))
+
+        expected_dest = cache_dir / "joint_encoder_checkpoint.pt"
+
+        def fake_download(repo_id, filename, local_dir):
+            p = Path(local_dir) / filename
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text("mock weights", encoding="utf-8")
+            return str(p)
+
+        monkeypatch.setattr("huggingface_hub.hf_hub_download", fake_download)
+
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        exit_code = main(
+            ["scan", str(fixture_repo)],
+            stdout=stdout,
+            stderr=stderr,
+        )
+
+        assert exit_code == 0
+        out = stdout.getvalue()
+        assert "SemDrift Detection Summary" in out
+        assert mock_model[-1].checkpoint_path == expected_dest
+
+    def test_scan_without_checkpoint_download_failure_returns_exit_code_1(
+        self, fixture_repo, tmp_path, mock_model, monkeypatch
+    ):
+        cache_dir = tmp_path / "empty_cache"
+        monkeypatch.setenv("SEM_DRIFT_CACHE_DIR", str(cache_dir))
+
+        def failing_download(*args, **kwargs):
+            raise RuntimeError("Network unreachable")
+
+        monkeypatch.setattr("huggingface_hub.hf_hub_download", failing_download)
+
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        exit_code = main(
+            ["scan", str(fixture_repo)],
+            stdout=stdout,
+            stderr=stderr,
+        )
+
+        assert exit_code == 1
+        assert stdout.getvalue() == ""
+        assert "Error:" in stderr.getvalue()
+        assert "Failed to download default model checkpoint" in stderr.getvalue()
+

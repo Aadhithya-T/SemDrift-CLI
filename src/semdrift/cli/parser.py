@@ -70,8 +70,10 @@ def build_parser() -> CLIArgumentParser:
     scan_parser.add_argument(
         "--checkpoint",
         type=str,
-        required=True,
-        help="Path to trained PyTorch model checkpoint (.pt).",
+        required=False,
+        default=None,
+        help="Path to trained PyTorch model checkpoint (.pt). "
+             "If omitted, the default SemDrift model is used.",
     )
     scan_parser.add_argument(
         "--batch-size",
@@ -119,14 +121,17 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> CLIConfig:
             exit_code=2,
         )
 
-    # Validate checkpoint string
-    checkpoint_str = str(args.checkpoint).strip()
-    if not checkpoint_str:
-        raise CLIArgumentError("error: --checkpoint path must not be empty", exit_code=2)
+    # Validate checkpoint string if provided
+    checkpoint_path: Optional[Path] = None
+    if args.checkpoint is not None:
+        checkpoint_str = str(args.checkpoint).strip()
+        if not checkpoint_str:
+            raise CLIArgumentError("error: --checkpoint path must not be empty", exit_code=2)
+        checkpoint_path = Path(checkpoint_str)
 
     return CLIConfig(
         path=Path(args.path),
-        checkpoint=Path(checkpoint_str),
+        checkpoint=checkpoint_path,
         format=args.format,
         threshold=float(args.threshold),
         batch_size=int(args.batch_size),

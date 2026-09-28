@@ -50,20 +50,23 @@ class SemDriftModel:
     @classmethod
     def from_checkpoint(
         cls,
-        checkpoint_path: Union[str, Path],
+        checkpoint_path: Optional[Union[str, Path]] = None,
         config: Optional[ModelConfig] = None,
         device: Optional[str] = None,
         encoder: Optional[torch.nn.Module] = None,
         tokenizer: Optional[Any] = None,
+        model_manager: Optional[Any] = None,
     ) -> SemDriftModel:
         """Instantiate a SemDriftModel by loading weights from a checkpoint file.
 
         Parameters:
             checkpoint_path: Path to the trained PyTorch state_dict checkpoint (.pt).
+                If None, the default model is resolved via ModelManager (downloading if needed).
             config: Optional ModelConfig override. If None, default ModelConfig is used.
             device: Optional device override ('cpu' or 'cuda').
             encoder: Optional pre-constructed encoder backbone (useful for offline unit testing).
             tokenizer: Optional pre-constructed tokenizer (useful for offline unit testing).
+            model_manager: Optional ModelManager instance to resolve default checkpoint.
 
         Returns:
             An evaluation-ready SemDriftModel instance.
@@ -74,11 +77,18 @@ class SemDriftModel:
         cfg = config or ModelConfig()
         target_device = device or cfg.device
 
-        path = Path(checkpoint_path)
+        if checkpoint_path is None:
+            from semdrift.model.manager import ModelManager
+
+            mgr = model_manager or ModelManager()
+            path = mgr.resolve_checkpoint()
+        else:
+            path = Path(checkpoint_path)
+
         if not path.exists():
             raise ModelLoadError(
-                message=f"Checkpoint file not found: '{checkpoint_path}'",
-                checkpoint_path=str(checkpoint_path),
+                message=f"Checkpoint file not found: '{path}'",
+                checkpoint_path=str(path),
             )
 
         # 1. Load checkpoint state_dict

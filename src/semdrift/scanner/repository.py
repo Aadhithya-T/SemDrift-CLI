@@ -42,9 +42,13 @@ class RepositoryScanner:
         ".venv",
         "venv",
         "env",
+        ".env",
+        "test-env",
         "__pycache__",
         ".pytest_cache",
         "node_modules",
+        "dist",
+        "build",
     }
 
     def __init__(

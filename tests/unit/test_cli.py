@@ -56,11 +56,10 @@ class TestCLIParser:
             parse_args([])
         assert exc_info.value.exit_code == 2
 
-    def test_missing_checkpoint_raises(self):
-        with pytest.raises(CLIArgumentError) as exc_info:
-            parse_args(["scan", "my_repo"])
-        assert exc_info.value.exit_code == 2
-        assert "checkpoint" in str(exc_info.value)
+    def test_omitted_checkpoint_defaults_to_none(self):
+        config = parse_args(["scan", "my_repo"])
+        assert config.path == Path("my_repo")
+        assert config.checkpoint is None
 
     def test_empty_checkpoint_string_raises(self):
         with pytest.raises(CLIArgumentError) as exc_info:

@@ -17,6 +17,7 @@ from semdrift.detection.detector import DriftDetector
 from semdrift.detection.exceptions import DetectionError
 from semdrift.model.exceptions import ModelError
 from semdrift.model.inference import SemDriftModel
+from semdrift.model.manager import ModelManager
 from semdrift.parser.ast_parser import PythonASTParser
 from semdrift.parser.models import CodeDocumentPair, ParseError
 from semdrift.reporting.exceptions import ReportingError
@@ -58,6 +59,7 @@ def orchestrate_scan(
     config: CLIConfig,
     stdout: Optional[TextIO] = None,
     stderr: Optional[TextIO] = None,
+    model_manager: Optional[ModelManager] = None,
 ) -> int:
     """Execute the end-to-end SemDrift scan workflow.
 
@@ -68,6 +70,7 @@ def orchestrate_scan(
         config: Validated runtime configuration.
         stdout: Output stream for rendered reports (defaults to sys.stdout).
         stderr: Error stream for warnings and diagnostics (defaults to sys.stderr).
+        model_manager: Optional ModelManager instance to resolve default checkpoints.
 
     Returns:
         Process exit code (0 on successful scan completion).
@@ -92,8 +95,14 @@ def orchestrate_scan(
 
     # 3. Model Layer
     target_device = resolve_device(config.device)
+    if config.checkpoint is not None:
+        checkpoint_path = config.checkpoint
+    else:
+        mgr = model_manager or ModelManager()
+        checkpoint_path = mgr.resolve_checkpoint()
+
     model = SemDriftModel.from_checkpoint(
-        checkpoint_path=config.checkpoint,
+        checkpoint_path=checkpoint_path,
         device=target_device,
     )
     predictions = model.predict(all_pairs, batch_size=config.batch_size)
@@ -123,6 +132,7 @@ def main(
     argv: Optional[Sequence[str]] = None,
     stdout: Optional[TextIO] = None,
     stderr: Optional[TextIO] = None,
+    model_manager: Optional[ModelManager] = None,
 ) -> int:
     """CLI application entry point.
 
@@ -133,6 +143,7 @@ def main(
         argv: Optional command-line arguments (defaults to sys.argv[1:]).
         stdout: Output stream for reports (defaults to sys.stdout).
         stderr: Error stream for diagnostics (defaults to sys.stderr).
+        model_manager: Optional ModelManager instance to resolve default checkpoints.
 
     Returns:
         0 on success, 1 on runtime error, 2 on argument/configuration error.
@@ -142,7 +153,7 @@ def main(
 
     try:
         config = parse_args(argv)
-        return orchestrate_scan(config, stdout=out, stderr=err)
+        return orchestrate_scan(config, stdout=out, stderr=err, model_manager=model_manager)
     except CLIArgumentError as exc:
         if exc.exit_code == 0:
             return 0
