@@ -37,7 +37,7 @@ CLI → Scanner → Parser → Code/Doc pairs → Model → Detection → Report
 ```
 
 Each stage is an isolated module with clearly defined boundaries:
-- `semdrift.scanner`: Discovers Python files, pruning excluded directories (`.git`, `.venv`, etc.).
+- `semdrift.scanner`: Discovers Python files, pruning excluded directories (`.git`, `.venv`, `test-env`, etc.).
 - `semdrift.parser`: Extracts function/method definitions, relative source code, and docstrings via AST.
 - `semdrift.model`: Preprocesses joint tokens and runs CodeBERT inference to yield drift probabilities.
 - `semdrift.detection`: Applies configurable decision thresholds without recalculating inference.
@@ -73,37 +73,64 @@ cd SemDrift-CLI
 pip install -e ".[dev]"
 ```
 
-## Model Checkpoint Requirement
+## Model Checkpoint
 
-SemDrift-CLI is an inference and developer tool that intentionally does **not** bundle large model checkpoint weights into the package distribution. Users must provide a compatible trained checkpoint separately; model weights are not automatically downloaded.
+SemDrift requires a trained CodeBERT Joint-Encoder checkpoint (`.pt` file) for inference.
 
-To run a scan, you must supply a trained CodeBERT Joint-Encoder checkpoint (`.pt` file) separately via the `--checkpoint` option:
+### Automatic Download (Default)
+
+When `--checkpoint` is omitted, SemDrift automatically downloads the default model from Hugging Face on first run:
 
 ```bash
-semdrift scan ./src --checkpoint /path/to/joint_encoder_checkpoint.pt
+# Just scan — the model is downloaded and cached automatically
+semdrift scan ./my-project
+```
+
+The checkpoint is cached locally at `~/.cache/semdrift/models/` and reused on subsequent runs. The download status is reported on `stderr`.
+
+### Custom Checkpoint
+
+You can also supply your own trained checkpoint explicitly:
+
+```bash
+semdrift scan ./my-project --checkpoint /path/to/joint_encoder_checkpoint.pt
 ```
 
 Checkpoints must contain the `state_dict` of the fine-tuned CodeBERT Joint Encoder architecture as trained in the [SemDrift research repository](https://github.com/Aadhithya-T/SemDrift).
+
+### Configuration
+
+The default model source and cache location can be overridden via environment variables:
+
+| Variable | Default | Description |
+|---|---|---|
+| `SEM_DRIFT_CACHE_DIR` | `~/.cache/semdrift/models` | Local directory for cached model checkpoints. |
+| `SEM_DRIFT_MODEL_REPO` | `Thunderb2314/semdrift-joint-encoder` | Hugging Face repository ID for the default model. |
+| `SEM_DRIFT_MODEL_FILENAME` | `joint_encoder_checkpoint.pt` | Filename of the checkpoint within the repository. |
+| `SEM_DRIFT_MODEL_URL` | *(unset)* | Direct download URL. If set, bypasses Hugging Face and downloads from this URL instead. |
 
 ## Usage
 
 Run a scan using the `semdrift` command or through module execution (`python -m semdrift`):
 
 ```bash
-# 1. Terminal output (default)
+# 1. Simplest invocation — auto-downloads the default model
+semdrift scan ./my-project
+
+# 2. Terminal output with a custom checkpoint
 semdrift scan ./my-project --checkpoint ./weights/joint_encoder.pt
 
-# 2. Markdown output (suitable for PR comments or CI logs)
-semdrift scan ./my-project --checkpoint ./weights/joint_encoder.pt --format markdown
+# 3. Markdown output (suitable for PR comments or CI logs)
+semdrift scan ./my-project --format markdown
 
-# 3. Machine-readable JSON output (pristine stdout, pipeable to jq)
-semdrift scan ./my-project --checkpoint ./weights/joint_encoder.pt --format json
+# 4. Machine-readable JSON output (pristine stdout, pipeable to jq)
+semdrift scan ./my-project --format json
 
-# 4. Custom threshold and batch size on CPU
-semdrift scan ./my-project --checkpoint ./weights/joint_encoder.pt --threshold 0.70 --batch-size 32 --device cpu
+# 5. Custom threshold and batch size on CPU
+semdrift scan ./my-project --threshold 0.70 --batch-size 32 --device cpu
 
-# 5. Scanning a single Python file
-semdrift scan ./my-project/auth.py --checkpoint ./weights/joint_encoder.pt
+# 6. Scanning a single Python file
+semdrift scan ./my-project/auth.py
 ```
 
 ### CLI Options
@@ -111,7 +138,7 @@ semdrift scan ./my-project/auth.py --checkpoint ./weights/joint_encoder.pt
 | Option | Type / Choices | Default | Description |
 |---|---|---|---|
 | `path` | Positional `str` / `Path` | *Required* | Path to target repository directory or single `.py` file to scan. |
-| `--checkpoint PATH` | `str` / `Path` | *Required* | Path to the trained PyTorch state_dict checkpoint (`.pt`). |
+| `--checkpoint PATH` | `str` / `Path` | *Auto-download* | Path to a trained PyTorch state_dict checkpoint (`.pt`). If omitted, the default SemDrift model is downloaded and cached automatically. |
 | `--format` | `terminal`, `markdown`, `json` | `terminal` | Format of the report rendered to `stdout`. |
 | `--threshold FLOAT` | `float` in `[0.0, 1.0]` | `0.50` | Decision threshold applied by `DriftDetector`. |
 | `--batch-size INT` | `int` (`> 0`) | `16` | Inference batch size passed to the model inference layer. |
@@ -120,19 +147,19 @@ semdrift scan ./my-project/auth.py --checkpoint ./weights/joint_encoder.pt
 ### Output Streams
 
 - **`stdout`**: Exclusively receives the formatted report. When using `--format json`, `stdout` is guaranteed to be clean, parseable JSON with no log banners or progress noise.
-- **`stderr`**: Exclusively receives diagnostic warnings (such as skipped unparseable files) and operational errors.
+- **`stderr`**: Exclusively receives diagnostic warnings (such as skipped unparseable files), model download progress, and operational errors.
 
 ### Process Exit Codes
 
 | Exit Code | Meaning | Description |
 |---|---|---|
 | `0` | **Success** | Scan completed successfully and report was emitted. *(Note: detecting semantic drift is a normal analytical finding, not a process failure)*. |
-| `1` | **Runtime Error** | Checkpoint missing/corrupt, target path unreadable, explicit CUDA unavailable, or model failure. |
-| `2` | **Argument Error** | Invalid CLI options, missing required `--checkpoint`, negative batch size, or out-of-bounds threshold. |
+| `1` | **Runtime Error** | Checkpoint missing/corrupt, model download failed, target path unreadable, explicit CUDA unavailable, or model failure. |
+| `2` | **Argument Error** | Invalid CLI options, negative batch size, or out-of-bounds threshold. |
 
 ## Model Limitations & Empirical Considerations
 
-1. **Inference Tool Scope**: SemDrift-CLI is an execution and reporting runtime. Model accuracy and generalization depend strictly on the weights provided via `--checkpoint`.
+1. **Inference Tool Scope**: SemDrift-CLI is an execution and reporting runtime. Model accuracy and generalization depend strictly on the weights provided via `--checkpoint` or the default downloaded model.
 2. **Technical Default Threshold**: The default `--threshold 0.50` is a technical baseline, **not** an empirically calibrated production optimum.
 3. **Research-Grounded Reality**: Empirical research on semantic drift models reveals that models evaluated solely on synthetic transformations (e.g. synthetic identifier perturbations) show performance degradation on authentic, real-world maintenance drift. High scores on synthetic benchmarks do not guarantee real-world generalization.
 4. **Validation Recommended**: Users should evaluate and calibrate the detection threshold against representative code/documentation samples from their own repository before relying on results for automated enforcement.
@@ -141,7 +168,7 @@ semdrift scan ./my-project/auth.py --checkpoint ./weights/joint_encoder.pt
 
 ```bash
 # Run the complete test suite (unit + integration)
-pytest tests/ -v
+python -m pytest tests/ -v
 ```
 
 ## Research & Implementation Boundary
@@ -151,4 +178,3 @@ For a detailed classification of which research components are ported to this im
 ## License
 
 MIT — see [LICENSE](LICENSE).
-
